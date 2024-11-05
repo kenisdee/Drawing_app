@@ -1,11 +1,19 @@
 import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
-
 from PIL import Image, ImageDraw
 
 
 class DrawingApp:
+    """
+    Класс DrawingApp представляет собой простое приложение для рисования с использованием библиотек tkinter и Pillow.
+    """
+
     def __init__(self, root):
+        """
+        Инициализация приложения.
+
+        :param root: Основное окно Tkinter.
+        """
         self.root = root
         self.root.title("Рисовалка с сохранением в PNG")
 
@@ -33,6 +41,7 @@ class DrawingApp:
         # Привязываем события к холсту
         self.canvas.bind('<B1-Motion>', self.paint)  # Рисование при перемещении мыши с зажатой левой кнопкой
         self.canvas.bind('<ButtonRelease-1>', self.reset)  # Сброс координат при отпускании кнопки мыши
+        self.canvas.bind('<Button-2>', self.pick_color)  # Выбор цвета с холста при нажатии правой кнопки мыши
 
         self.setup_ui()
 
@@ -41,6 +50,9 @@ class DrawingApp:
         self.eraser_button.pack(side=tk.LEFT)
 
     def setup_ui(self):
+        """
+        Настройка пользовательского интерфейса.
+        """
         # Создаем фрейм для кнопок управления
         control_frame = tk.Frame(self.root)
         control_frame.pack(fill=tk.X)
@@ -63,7 +75,11 @@ class DrawingApp:
         self.brush_size_menu.pack(side=tk.LEFT)
 
     def paint(self, event):
-        # Рисование линии на холсте и на изображении
+        """
+        Рисование линии на холсте и на изображении.
+
+        :param event: Событие Tkinter, содержащее координаты мыши.
+        """
         if self.last_x and self.last_y:
             self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
                                     width=self.brush_size, fill=self.pen_color,
@@ -76,22 +92,34 @@ class DrawingApp:
         self.last_y = event.y
 
     def reset(self, event):
-        # Сбрасываем последние координаты мыши
+        """
+        Сброс последних координат мыши.
+
+        :param event: Событие Tkinter.
+        """
         self.last_x, self.last_y = None, None
 
     def clear_canvas(self):
-        # Очищаем холст и создаем новое изображение с белым фоном
+        """
+        Очистка холста и создание нового изображения с белым фоном.
+        """
         self.canvas.delete("all")
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
     def choose_color(self):
+        """
+        Выбор цвета пера с помощью диалога выбора цвета.
+        """
         # Сохраняем текущий цвет перед выбором нового
         self.previous_color = self.pen_color
         # Открываем диалог выбора цвета и устанавливаем выбранный цвет
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
     def save_image(self):
+        """
+        Сохранение изображения в формате PNG.
+        """
         # Открываем диалог сохранения файла и сохраняем изображение в формате PNG
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
         if file_path:
@@ -101,11 +129,17 @@ class DrawingApp:
             messagebox.showinfo("Информация", "Изображение успешно сохранено!")
 
     def update_brush_size(self, value):
-        # Обновляем размер кисти на основе выбранного значения
+        """
+        Обновление размера кисти на основе выбранного значения.
+
+        :param value: Выбранное значение размера кисти.
+        """
         self.brush_size = int(value)
 
     def toggle_eraser(self):
-        # Переключаемся между инструментом кисти и ластиком
+        """
+        Переключение между инструментом кисти и ластиком.
+        """
         if self.pen_color == 'white':  # Если текущий цвет - белый, переключаемся обратно на предыдущий цвет
             self.pen_color = self.previous_color
             self.eraser_button.config(text="Ластик")  # Обновляем текст кнопки
@@ -114,8 +148,21 @@ class DrawingApp:
             self.pen_color = 'white'  # Устанавливаем цвет пера на белый (цвет фона)
             self.eraser_button.config(text="Кисть")  # Обновляем текст кнопки
 
+    def pick_color(self, event):
+        """
+        Выбор цвета с холста при нажатии правой кнопки мыши.
+
+        :param event: Событие Tkinter, содержащее координаты мыши.
+        """
+        x, y = event.x, event.y
+        color = self.image.getpixel((x, y))  # Получаем цвет пикселя с изображения
+        self.pen_color = '#%02x%02x%02x' % color  # Преобразуем цвет в формат HEX
+
 
 def main():
+    """
+    Основная функция для запуска приложения.
+    """
     root = tk.Tk()
     DrawingApp(root)
     root.mainloop()
