@@ -120,14 +120,6 @@ class DrawingApp:
         color = self.image.getpixel((x, y))  # Получаем цвет пикселя с изображения
         self.set_pen_color('#%02x%02x%02x' % color)  # Преобразуем цвет в формат HEX
 
-    def pick_color_hotkey(self, event):
-        """
-        Выбор цвета с холста при нажатии горячей клавиши.
-
-        :param event: Событие Tkinter, содержащее координаты мыши.
-        """
-        self.pick_color(event)
-
     def set_pen_color(self, color):
         """
         Установка цвета пера и сохранение предыдущего цвета.
