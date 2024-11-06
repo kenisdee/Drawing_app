@@ -45,6 +45,7 @@ class DrawingApp:
         # Привязываем горячие клавиши
         self.root.bind('<Control-s>', self.save_image)
         self.root.bind('<Control-c>', self.choose_color)
+        self.root.bind('<Control-e>', self.toggle_eraser)
 
         self.setup_ui()
 
@@ -143,7 +144,7 @@ class DrawingApp:
         """
         self.brush_size = int(value)
 
-    def toggle_eraser(self):
+    def toggle_eraser(self, event=None):
         """
         Переключение между инструментом кисти и ластиком.
         """
