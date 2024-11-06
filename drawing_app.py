@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
+
 from PIL import Image, ImageDraw
 
 
@@ -46,6 +47,9 @@ class DrawingApp:
         self.root.bind('<Control-s>', self.save_image)
         self.root.bind('<Control-c>', self.choose_color)
         self.root.bind('<Control-e>', self.toggle_eraser)
+        self.root.bind('<Control-n>', self.clear_canvas)
+        self.root.bind('<Control-[>', self.decrease_brush_size)
+        self.root.bind('<Control-]>', self.increase_brush_size)
 
         self.setup_ui()
 
@@ -92,7 +96,7 @@ class DrawingApp:
         """
         self.last_x, self.last_y = None, None
 
-    def clear_canvas(self):
+    def clear_canvas(self, event=None):
         """
         Очистка холста и создание нового изображения с белым фоном.
         """
@@ -115,6 +119,14 @@ class DrawingApp:
         x, y = event.x, event.y
         color = self.image.getpixel((x, y))  # Получаем цвет пикселя с изображения
         self.set_pen_color('#%02x%02x%02x' % color)  # Преобразуем цвет в формат HEX
+
+    def pick_color_hotkey(self, event):
+        """
+        Выбор цвета с холста при нажатии горячей клавиши.
+
+        :param event: Событие Tkinter, содержащее координаты мыши.
+        """
+        self.pick_color(event)
 
     def set_pen_color(self, color):
         """
@@ -154,6 +166,24 @@ class DrawingApp:
         else:
             self.set_pen_color('white')  # Устанавливаем цвет пера на белый (цвет фона)
             self.eraser_button.config(text="Кисть")  # Обновляем текст кнопки
+
+    def decrease_brush_size(self, event=None):
+        """
+        Уменьшение размера кисти.
+        """
+        current_index = self.BRUSH_SIZES.index(self.brush_size)
+        if current_index > 0:
+            self.brush_size = self.BRUSH_SIZES[current_index - 1]
+            self.brush_size_var.set(str(self.brush_size))
+
+    def increase_brush_size(self, event=None):
+        """
+        Увеличение размера кисти.
+        """
+        current_index = self.BRUSH_SIZES.index(self.brush_size)
+        if current_index < len(self.BRUSH_SIZES) - 1:
+            self.brush_size = self.BRUSH_SIZES[current_index + 1]
+            self.brush_size_var.set(str(self.brush_size))
 
 
 def main():
