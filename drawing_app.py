@@ -42,6 +42,10 @@ class DrawingApp:
         self.canvas.bind('<ButtonRelease-1>', self.reset)
         self.canvas.bind('<Button-2>', self.pick_color)
 
+        # Привязываем горячие клавиши
+        self.root.bind('<Control-s>', self.save_image)
+        self.root.bind('<Control-c>', self.choose_color)
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -95,7 +99,7 @@ class DrawingApp:
         self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-    def choose_color(self):
+    def choose_color(self, event=None):
         """
         Выбор цвета пера с помощью диалога выбора цвета.
         """
@@ -120,7 +124,7 @@ class DrawingApp:
         self.previous_color = self.pen_color  # Сохраняем предыдущий цвет
         self.pen_color = color  # Устанавливаем новый цвет
 
-    def save_image(self):
+    def save_image(self, event=None):
         """
         Сохранение изображения в формате PNG.
         """
