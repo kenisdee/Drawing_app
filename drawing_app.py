@@ -23,33 +23,45 @@ class DrawingApp:
         self.root.title("Рисовалка с сохранением в PNG")
 
         # Создаем изображение и холст
-        self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT), "white")
-        self.draw = ImageDraw.Draw(self.image)
-        self.canvas = tk.Canvas(root, width=self.CANVAS_WIDTH, height=self.CANVAS_HEIGHT, bg='white')
-        self.canvas.pack()
+        self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT),
+                               "white")  # Создаем новое изображение с белым фоном
+        self.draw = ImageDraw.Draw(self.image)  # Создаем объект для рисования на изображении
+        self.canvas = tk.Canvas(root, width=self.CANVAS_WIDTH, height=self.CANVAS_HEIGHT,
+                                bg='white')  # Создаем холст Tkinter с белым фоном
+        self.canvas.pack()  # Размещаем холст в окне
 
         # Переменные для отслеживания состояния
-        self.last_x, self.last_y = None, None
-        self.pen_color = 'black'
-        self.brush_size = self.BRUSH_SIZES[0]
-        self.previous_color = self.pen_color
+        self.last_x, self.last_y = None, None  # Инициализация координат последней точки рисования
+        self.pen_color = 'black'  # Установка начального цвета кисти
+        self.brush_size = self.BRUSH_SIZES[0]  # Установка начального размера кисти
+        self.previous_color = self.pen_color  # Сохранение текущего цвета кисти как предыдущего
 
         # Инициализация переменных для UI
-        self.brush_size_var = tk.StringVar(value=str(self.BRUSH_SIZES[0]))
-        self.eraser_button = None
+        self.brush_size_var = tk.StringVar(
+            value=str(self.BRUSH_SIZES[0]))  # Переменная для хранения текущего размера кисти
+        self.eraser_button = None  # Кнопка для переключения между кистью и ластиком
 
         # Привязываем события к холсту
-        self.canvas.bind('<B1-Motion>', self.paint)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
-        self.canvas.bind('<Button-2>', self.pick_color)
+        self.canvas.bind('<B1-Motion>',
+                         self.paint)  # Привязываем событие движения мыши с зажатой левой кнопкой к методу paint
+        self.canvas.bind('<ButtonRelease-1>',
+                         self.reset)  # Привязываем событие отпускания левой кнопки мыши к методу reset
+        self.canvas.bind('<Button-2>',
+                         self.pick_color)  # Привязываем событие нажатия средней кнопки мыши (правой на некоторых системах) к методу pick_color
 
         # Привязываем горячие клавиши
-        self.root.bind('<Control-s>', self.save_image)
-        self.root.bind('<Control-c>', self.choose_color)
-        self.root.bind('<Control-e>', self.toggle_eraser)
-        self.root.bind('<Control-n>', self.clear_canvas)
-        self.root.bind('<Control-[>', self.decrease_brush_size)
-        self.root.bind('<Control-]>', self.increase_brush_size)
+        self.root.bind('<Control-s>', self.save_image)  # Привязываем сохранение изображения к комбинации Ctrl+S
+        self.root.bind('<Control-c>', self.choose_color)  # Привязываем выбор цвета к комбинации Ctrl+C
+        self.root.bind('<Control-e>', self.toggle_eraser)  # Привязываем переключение ластика к комбинации Ctrl+E
+        self.root.bind('<Control-n>', self.clear_canvas)  # Привязываем очистку холста к комбинации Ctrl+N
+        self.root.bind('<Control-[>',
+                       self.decrease_brush_size)  # Привязываем уменьшение размера кисти к комбинации Ctrl+[
+        self.root.bind('<Control-]>',
+                       self.increase_brush_size)  # Привязываем увеличение размера кисти к комбинации Ctrl+]
+
+        # Добавляем холст для предварительного просмотра цвета кисти
+        self.color_preview_canvas = tk.Canvas(self.root, width=25, height=25, bg=self.pen_color)
+        self.color_preview_canvas.pack(side=tk.LEFT, padx=5)
 
         self.setup_ui()
 
@@ -57,18 +69,23 @@ class DrawingApp:
         """
         Настройка пользовательского интерфейса.
         """
-        control_frame = tk.Frame(self.root)
-        control_frame.pack(fill=tk.X)
+        control_frame = tk.Frame(self.root)  # Создаем фрейм для размещения элементов управления
+        control_frame.pack(fill=tk.X)  # Размещаем фрейм в окне, заполняя его по горизонтали
 
-        tk.Button(control_frame, text="Очистить", command=self.clear_canvas).pack(side=tk.LEFT)
-        tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color).pack(side=tk.LEFT)
-        tk.Button(control_frame, text="Сохранить", command=self.save_image).pack(side=tk.LEFT)
+        tk.Button(control_frame, text="Очистить", command=self.clear_canvas).pack(
+            side=tk.LEFT)  # Добавляем кнопку "Очистить"
+        tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color).pack(
+            side=tk.LEFT)  # Добавляем кнопку "Выбрать цвет"
+        tk.Button(control_frame, text="Сохранить", command=self.save_image).pack(
+            side=tk.LEFT)  # Добавляем кнопку "Сохранить"
 
         tk.OptionMenu(control_frame, self.brush_size_var, *map(str, self.BRUSH_SIZES),
+                      # Добавляем выпадающий список для выбора размера кисти
                       command=self.update_brush_size).pack(side=tk.LEFT)
 
-        self.eraser_button = tk.Button(self.root, text="Ластик", command=self.toggle_eraser)
-        self.eraser_button.pack(side=tk.LEFT)
+        self.eraser_button = tk.Button(self.root, text="Ластик",
+                                       command=self.toggle_eraser)  # Добавляем кнопку "Ластик"
+        self.eraser_button.pack(side=tk.LEFT)  # Размещаем кнопку "Ластик" слева
 
     def paint(self, event):
         """
@@ -100,15 +117,18 @@ class DrawingApp:
         """
         Очистка холста и создание нового изображения с белым фоном.
         """
-        self.canvas.delete("all")
-        self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT), "white")
-        self.draw = ImageDraw.Draw(self.image)
+        self.canvas.delete("all")  # Очищаем холст от всех элементов
+        self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT),
+                               "white")  # Создаем новое изображение с белым фоном
+        self.draw = ImageDraw.Draw(self.image)  # Создаем объект для рисования на изображении
 
     def choose_color(self, event=None):
         """
         Выбор цвета пера с помощью диалога выбора цвета.
         """
-        self.set_pen_color(colorchooser.askcolor(color=self.pen_color)[1])
+        color = colorchooser.askcolor(color=self.pen_color)[1]  # Вызываем диалог выбора цвета и получаем выбранный цвет
+        if color:  # Проверяем, что цвет был выбран
+            self.set_pen_color(color)  # Устанавливаем выбранный цвет кисти
 
     def pick_color(self, event):
         """
@@ -128,17 +148,20 @@ class DrawingApp:
         """
         self.previous_color = self.pen_color  # Сохраняем предыдущий цвет
         self.pen_color = color  # Устанавливаем новый цвет
+        self.color_preview_canvas.config(bg=self.pen_color)  # Обновляем цвет предварительного просмотра
 
     def save_image(self, event=None):
         """
         Сохранение изображения в формате PNG.
         """
-        file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
-        if file_path:
-            if not file_path.endswith('.png'):
+        file_path = filedialog.asksaveasfilename(
+            filetypes=[('PNG files', '*.png')])  # Открываем диалог сохранения файла с фильтром для PNG файлов
+        if file_path:  # Если пользователь выбрал путь для сохранения
+            if not file_path.endswith('.png'):  # Если путь не заканчивается на .png, добавляем его
                 file_path += '.png'
-            self.image.save(file_path)
-            messagebox.showinfo("Информация", "Изображение успешно сохранено!")
+            self.image.save(file_path)  # Сохраняем изображение по выбранному пути
+            messagebox.showinfo("Информация",
+                                "Изображение успешно сохранено!")  # Показываем сообщение об успешном сохранении
 
     def update_brush_size(self, value):
         """
@@ -163,19 +186,20 @@ class DrawingApp:
         """
         Уменьшение размера кисти.
         """
-        current_index = self.BRUSH_SIZES.index(self.brush_size)
+        current_index = self.BRUSH_SIZES.index(self.brush_size)  # Получаем индекс текущего размера кисти
         if current_index > 0:
-            self.brush_size = self.BRUSH_SIZES[current_index - 1]
-            self.brush_size_var.set(str(self.brush_size))
+            self.brush_size = self.BRUSH_SIZES[current_index - 1]  # Уменьшаем размер кисти на один шаг
+            self.brush_size_var.set(str(self.brush_size))  # Обновляем значение переменной размера кисти
 
     def increase_brush_size(self, event=None):
         """
         Увеличение размера кисти.
         """
-        current_index = self.BRUSH_SIZES.index(self.brush_size)
-        if current_index < len(self.BRUSH_SIZES) - 1:
-            self.brush_size = self.BRUSH_SIZES[current_index + 1]
-            self.brush_size_var.set(str(self.brush_size))
+        current_index = self.BRUSH_SIZES.index(self.brush_size)  # Получаем индекс текущего размера кисти
+        if current_index < len(
+                self.BRUSH_SIZES) - 1:  # Проверяем, не является ли текущий размер кисти последним в списке
+            self.brush_size = self.BRUSH_SIZES[current_index + 1]  # Увеличиваем размер кисти на следующий в списке
+            self.brush_size_var.set(str(self.brush_size))  # Обновляем значение переменной размера кисти в интерфейсе
 
 
 def main():
