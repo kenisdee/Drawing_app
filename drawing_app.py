@@ -58,6 +58,8 @@ class DrawingApp:
                        self.decrease_brush_size)  # Привязываем уменьшение размера кисти к комбинации Ctrl+[
         self.root.bind('<Control-]>',
                        self.increase_brush_size)  # Привязываем увеличение размера кисти к комбинации Ctrl+]
+        self.root.bind('<Control-r>',
+                       self.change_canvas_size)  # Привязываем изменение размера холста к комбинации Ctrl+R
 
         # Добавляем холст для предварительного просмотра цвета кисти
         self.color_preview_canvas = tk.Canvas(self.root, width=25, height=25, bg=self.pen_color)
@@ -78,6 +80,8 @@ class DrawingApp:
             side=tk.LEFT)  # Добавляем кнопку "Выбрать цвет"
         tk.Button(control_frame, text="Сохранить", command=self.save_image).pack(
             side=tk.LEFT)  # Добавляем кнопку "Сохранить"
+        tk.Button(control_frame, text="Изменить размер холста", command=self.change_canvas_size).pack(
+            side=tk.LEFT)  # Добавляем кнопку для изменения размера холста
 
         tk.OptionMenu(control_frame, self.brush_size_var, *map(str, self.BRUSH_SIZES),
                       # Добавляем выпадающий список для выбора размера кисти
@@ -200,6 +204,49 @@ class DrawingApp:
                 self.BRUSH_SIZES) - 1:  # Проверяем, не является ли текущий размер кисти последним в списке
             self.brush_size = self.BRUSH_SIZES[current_index + 1]  # Увеличиваем размер кисти на следующий в списке
             self.brush_size_var.set(str(self.brush_size))  # Обновляем значение переменной размера кисти в интерфейсе
+
+    def change_canvas_size(self, event=None):
+        """
+        Изменение размера холста.
+        """
+        # Создаем новое диалоговое окно для ввода новых размеров холста
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Изменение размера холста")
+
+        # Добавляем метку и поле ввода для ширины
+        tk.Label(dialog, text="Ширина:").grid(row=0, column=0)
+        width_entry = tk.Entry(dialog)
+        width_entry.insert(0, str(self.CANVAS_WIDTH))  # Предзаполняем поле текущей шириной холста
+        width_entry.grid(row=0, column=1)
+
+        # Добавляем метку и поле ввода для высоты
+        tk.Label(dialog, text="Высота:").grid(row=1, column=0)
+        height_entry = tk.Entry(dialog)
+        height_entry.insert(0, str(self.CANVAS_HEIGHT))  # Предзаполняем поле текущей высотой холста
+        height_entry.grid(row=1, column=1)
+
+        # Определяем функцию для применения изменений
+        def apply_changes():
+            new_width = int(width_entry.get())  # Получаем введенную ширину
+            new_height = int(height_entry.get())  # Получаем введенную высоту
+            if new_width > 0 and new_height > 0:  # Проверяем, что введенные значения положительные
+                self.CANVAS_WIDTH = new_width  # Обновляем ширину холста
+                self.CANVAS_HEIGHT = new_height  # Обновляем высоту холста
+
+                # Обновляем размер холста
+                self.canvas.config(width=self.CANVAS_WIDTH, height=self.CANVAS_HEIGHT)
+
+                # Создаем новое изображение с новыми размерами
+                self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT), "white")
+                self.draw = ImageDraw.Draw(self.image)
+
+                # Очищаем текущий холст
+                self.canvas.delete("all")
+
+            dialog.destroy()
+
+        # Создаем кнопку "Применить" и привязываем ее к функции apply_changes
+        tk.Button(dialog, text="Применить", command=apply_changes).grid(row=2, columnspan=2)
 
 
 def main():
