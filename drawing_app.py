@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import colorchooser, filedialog, messagebox
-
-from PIL import Image, ImageDraw
+from tkinter import colorchooser, filedialog, messagebox, simpledialog
+from PIL import Image, ImageDraw, ImageFont
 
 
 class DrawingApp:
@@ -60,6 +59,9 @@ class DrawingApp:
                        self.increase_brush_size)  # Привязываем увеличение размера кисти к комбинации Ctrl+]
         self.root.bind('<Control-r>',
                        self.change_canvas_size)  # Привязываем изменение размера холста к комбинации Ctrl+R
+        self.root.bind('<Control-b>',
+                       self.change_background_color)  # Привязываем изменение цвета фона к комбинации Ctrl+B
+        self.root.bind('<Control-t>', self.add_text)  # Привязываем добавление текста к комбинации Ctrl+T
 
         # Добавляем холст для предварительного просмотра цвета кисти
         self.color_preview_canvas = tk.Canvas(self.root, width=25, height=25, bg=self.pen_color)
@@ -82,6 +84,10 @@ class DrawingApp:
             side=tk.LEFT)  # Добавляем кнопку "Сохранить"
         tk.Button(control_frame, text="Изменить размер холста", command=self.change_canvas_size).pack(
             side=tk.LEFT)  # Добавляем кнопку для изменения размера холста
+        tk.Button(control_frame, text="Текст", command=self.add_text).pack(
+            side=tk.LEFT)  # Добавляем кнопку "Текст"
+        tk.Button(control_frame, text="Изменить фон", command=self.change_background_color).pack(
+            side=tk.LEFT)  # Добавляем кнопку "Изменить фон"
 
         tk.OptionMenu(control_frame, self.brush_size_var, *map(str, self.BRUSH_SIZES),
                       # Добавляем выпадающий список для выбора размера кисти
@@ -247,6 +253,37 @@ class DrawingApp:
 
         # Создаем кнопку "Применить" и привязываем ее к функции apply_changes
         tk.Button(dialog, text="Применить", command=apply_changes).grid(row=2, columnspan=2)
+
+    def add_text(self):
+        """
+        Добавление текста на холст.
+        """
+        text = simpledialog.askstring("Введите текст", "Введите текст:")  # Открываем диалог для ввода текста
+        if text:  # Если текст был введен
+            self.canvas.bind('<Button-1>', lambda event: self.place_text(event, text))  # Привязываем событие клика мыши
+
+    def place_text(self, event, text):
+        """
+        Размещение текста на холсте и изображении.
+
+        :param event: Событие Tkinter, содержащее координаты мыши.
+        :param text: Текст для размещения.
+        """
+        x, y = event.x, event.y
+        font = ImageFont.truetype("arial.ttf", 12)  # Создаем объект шрифта
+        self.canvas.create_text(x, y, text=text, fill=self.pen_color, font=("Arial", 12))  # Добавляем текст на холст
+        self.draw.text((x, y), text, fill=self.pen_color, font=font)  # Добавляем текст на изображение
+        self.canvas.unbind('<Button-1>')  # Отвязываем событие клика мыши
+
+    def change_background_color(self):
+        """
+        Изменение цвета фона холста.
+        """
+        color = colorchooser.askcolor()[1]  # Открываем диалог выбора цвета
+        if color:  # Проверяем, что цвет был выбран
+            self.canvas.config(background=color)  # Применяем выбранный цвет к фону холста
+            self.image = Image.new("RGB", (self.CANVAS_WIDTH, self.CANVAS_HEIGHT), color)  # Создаем новое изображение с новым фоном
+            self.draw = ImageDraw.Draw(self.image)  # Создаем объект для рисования на изображении
 
 
 def main():
